@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import type { Env } from './types'
 import ingest from './routes/ingest'
+import query from './routes/query'
 
 export { Db9Gateway } from './entrypoints/db9-gateway'
 
@@ -14,5 +15,6 @@ app.get('/health', (c) => {
 })
 
 app.route('/ingest', ingest)
+app.route('/query', query)
 
 export default app

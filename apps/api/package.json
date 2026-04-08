@@ -1,0 +1,21 @@
+{
+  "name": "@log9/api",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --port 3151",
+    "build": "wrangler build",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@log9/core": "workspace:*",
+    "hono": "^4.7.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260305.0",
+    "typescript": "^5.7.0",
+    "wrangler": "^4.80.0"
+  }
+}

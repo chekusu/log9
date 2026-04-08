@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json.schemastore.org/wrangler",
+  "name": "log9-api",
+  "compatibility_date": "2026-04-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "src/index.ts",
+  "worker_loaders": [
+    {
+      "binding": "LOADER"
+    }
+  ]
+}

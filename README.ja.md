@@ -4,6 +4,8 @@ AIネイティブな集中オブザーバビリティプラットフォーム。
 
 すべてのログは単一の Cloudflare Worker (Log Worker) を経由して db9.ai PostgreSQL データベースに集約される。SDK はデータベースに直接接続せず、JSON を Log Worker に POST する設計になっている。
 
+[English](README.md) | [中文](README.zh.md)
+
 ---
 
 ## アーキテクチャ概要

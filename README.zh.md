@@ -2,6 +2,8 @@
 
 AI 原生的集中式可观测性平台。所有日志通过单一 Cloudflare Worker（Log Worker）统一接收，写入 db9.ai PostgreSQL 数据库。SDK 不直接连接数据库，而是将 JSON 数据 POST 到 Log Worker。
 
+[English](README.md) | [日本語](README.ja.md)
+
 ## 架构概览
 
 ```

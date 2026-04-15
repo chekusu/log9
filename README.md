@@ -2,6 +2,8 @@
 
 AI-native centralized observability platform. All logs flow through a single Cloudflare Worker into a db9.ai PostgreSQL database. The SDK never connects to the database directly — it POSTs JSON to the Log Worker, which handles ingestion, querying, and serves as the data layer for an autonomous analysis agent.
 
+[中文](README.zh.md) | [日本語](README.ja.md)
+
 ## Architecture
 
 ```

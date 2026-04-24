@@ -2,8 +2,12 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": "./src",
-    "types": ["@cloudflare/workers-types"]
+    "rootDir": "..",
+    "lib": ["ES2022", "DOM"],
+    "types": ["node", "@cloudflare/workers-types"],
+    "paths": {
+      "@log9/core": ["../core/src/index.ts"]
+    }
   },
   "include": ["src/**/*"]
 }

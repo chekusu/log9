@@ -17,15 +17,7 @@ export function withRequestLogging(
       message: `${request.method} ${url.pathname}`,
     })
 
-    let status = 0
-    try {
-      const response = await handler(request, env, ctx)
-      status = response.status
-      return response
-    } catch (err) {
-      status = 500
-      throw err
-    } finally {
+    const finish = (status: number, opts?: { captureStatusEvent?: boolean; flush?: boolean }) => {
       const duration = Date.now() - start
       const span: Log9Span = {
         project: client.config.project,
@@ -41,13 +33,24 @@ export function withRequestLogging(
       }
       client.transport.pushSpan(span)
 
-      if (status >= 500) {
+      if (opts?.captureStatusEvent !== false && status >= 500) {
         client.captureEvent('error', `${request.method} ${url.pathname} → ${status}`, { duration })
-      } else if (status >= 400) {
+      } else if (opts?.captureStatusEvent !== false && status >= 400) {
         client.captureEvent('warn', `${request.method} ${url.pathname} → ${status}`, { duration })
       }
 
-      ctx.waitUntil(client.flush())
+      if (opts?.flush !== false) {
+        ctx.waitUntil(client.flush())
+      }
+    }
+
+    try {
+      const response = await handler(request, env, ctx)
+      finish(response.status)
+      return response
+    } catch (err) {
+      finish(500, { captureStatusEvent: false, flush: false })
+      throw err
     }
   }
 }

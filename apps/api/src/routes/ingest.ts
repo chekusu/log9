@@ -7,6 +7,13 @@ import { normalizeCustom } from '../adapters/custom'
 
 const ingest = new Hono<Env>()
 
+function observeBackgroundTask(promise: Promise<unknown>, context: string) {
+  return promise.catch((error) => {
+    console.error(`[ingest] background persistence failed for ${context}`, error)
+    throw error
+  })
+}
+
 /** Auth middleware: verify X-Log9-Key */
 ingest.use('*', async (c, next) => {
   const key = c.req.header('X-Log9-Key')
@@ -22,14 +29,9 @@ ingest.post('/:project/sdk', async (c) => {
   const body = await c.req.json()
   const { events, spans } = normalizeSdk(project, body)
 
-  c.executionCtx.waitUntil(
-    Promise.all([
-      db9InsertEvents(c.env, events),
-      db9InsertSpans(c.env, spans),
-    ])
-  )
+  c.executionCtx.waitUntil(observeBackgroundTask(Promise.all([db9InsertEvents(c.env, events), db9InsertSpans(c.env, spans)]), 'sdk'))
 
-  return c.json({ received: events.length + spans.length })
+  return c.json({ accepted: events.length + spans.length, persistence: 'deferred' }, 202)
 })
 
 /** POST /ingest/:project/twilio — Twilio Status Callback */
@@ -38,9 +40,9 @@ ingest.post('/:project/twilio', async (c) => {
   const body = await c.req.json()
   const event = normalizeTwilio(project, body)
 
-  c.executionCtx.waitUntil(db9InsertEvents(c.env, [event]))
+  c.executionCtx.waitUntil(observeBackgroundTask(db9InsertEvents(c.env, [event]), 'twilio'))
 
-  return c.json({ received: 1 })
+  return c.json({ accepted: 1, persistence: 'deferred' }, 202)
 })
 
 /** POST /ingest/:project/custom — Generic JSON */
@@ -51,9 +53,9 @@ ingest.post('/:project/custom', async (c) => {
   const items = Array.isArray(body) ? body : [body]
   const events = items.map((item) => normalizeCustom(project, item))
 
-  c.executionCtx.waitUntil(db9InsertEvents(c.env, events))
+  c.executionCtx.waitUntil(observeBackgroundTask(db9InsertEvents(c.env, events), 'custom'))
 
-  return c.json({ received: events.length })
+  return c.json({ accepted: events.length, persistence: 'deferred' }, 202)
 })
 
 export default ingest

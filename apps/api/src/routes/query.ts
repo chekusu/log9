@@ -4,6 +4,7 @@ import { db9Query } from '../lib/db9'
 import { buildQueryPrompt } from '../lib/prompt-builder'
 import { generateSQL } from '../lib/code-generator'
 import { buildStructuredQuery } from '../lib/structured-query'
+import { assertReadOnlySql } from '../lib/sql-guard'
 import type { NLQuery, StructuredQuery } from '@log9/core'
 
 const query = new Hono<Env>()
@@ -35,9 +36,10 @@ query.post('/', async (c) => {
     sql = buildStructuredQuery(body as StructuredQuery)
   }
 
-  const firstWord = sql.trim().split(/\s/)[0]?.toUpperCase()
-  if (firstWord !== 'SELECT' && firstWord !== 'WITH') {
-    return c.json({ error: 'Only SELECT/WITH queries allowed', sql }, 400)
+  try {
+    sql = assertReadOnlySql(sql)
+  } catch (error) {
+    return c.json({ error: (error as Error).message, sql }, 400)
   }
 
   const result = await db9Query(c.env, sql)

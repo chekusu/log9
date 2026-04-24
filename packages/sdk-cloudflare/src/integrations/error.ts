@@ -1,4 +1,5 @@
 import type { Log9Client } from '@log9/core'
+import { isCapturedError, markCapturedError } from './error-state'
 
 /**
  * Wraps a fetch handler to automatically capture uncaught exceptions.
@@ -11,6 +12,11 @@ export function withErrorCapture(
     try {
       return await handler(request, env, ctx)
     } catch (err) {
+      if (isCapturedError(err)) {
+        throw err
+      }
+
+      markCapturedError(err)
       client.captureException(err, {
         tags: {
           url: request.url,
